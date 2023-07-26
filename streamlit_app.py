@@ -37,7 +37,7 @@ for message in st.session_state.messages:
 # Get Template and Target CSV Files
 template = st.file_uploader("Upload a template in csv format.", key='CSVTemplate')
 csv_template = None
-while template is not None:
+if template is not None:
     try:
         csv_template = load_csv(template)
         with st.chat_message("assistant"):

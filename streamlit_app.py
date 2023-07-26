@@ -1,6 +1,7 @@
 import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
+from utils import load_csv
 
 # App title
 st.set_page_config(page_title="🤗💬 HugChat")
@@ -31,7 +32,37 @@ if "messages" not in st.session_state.keys():
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
-    template_uploader = st.file_uploader("Upload a template in csv format.", key='CSVTemplate')
+
+
+template = st.file_uploader("Upload a template in csv format.", key='CSVTemplate')
+if template is not None:
+    try:
+        csv_template = load_csv(template)
+        with st.chat_message("assistant"):
+            response = 'Thank you!'
+            st.write(response)
+    except Exception as e:
+        with st.chat_message("assistant"):
+            response = f'Unfortunately, there was an error processing your file\n{str(e)}'
+            st.write(response)
+    message = {"role": "assistant", "content": response}
+    st.session_state.messages.append(message)
+
+
+uploader_message = "Now please upload another CSV file that you would like converted to the template format"
+target = st.file_uploader(uploader_message, key='CSVTarget')
+if target is not None:
+    try:
+        csv_target = load_csv(template)
+        with st.chat_message("assistant"):
+            response = 'Thank you!'
+            st.write(response)
+    except Exception as e:
+        with st.chat_message("assistant"):
+            response = f'Unfortunately, there was an error processing your file\n{str(e)}'
+            st.write(response)
+    message = {"role": "assistant", "content": response}
+    st.session_state.messages.append(message)
 
 # Function for generating LLM response
 def generate_response(prompt_input, email, passwd):

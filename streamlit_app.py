@@ -31,7 +31,7 @@ if "messages" not in st.session_state.keys():
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
-    template_uploader = st.file_uploader("Upload a template in csv format.")
+    template_uploader = st.file_uploader("Upload a template in csv format.", key='CSVTemplate')
 
 # Function for generating LLM response
 def generate_response(prompt_input, email, passwd):

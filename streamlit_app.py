@@ -23,12 +23,15 @@ with st.sidebar:
     
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I help you?"}]
+    content = "I'm Tabby, a helpful AI assistant for organizing your data how you want."
+    content += "\nPlease upload a template file in csv format with the desired column names and data formats."
+    st.session_state.messages = [{"role": "assistant", "content": content}]
 
 # Display chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
+    template_uploader = st.file_uploader("Upload a template in csv format.")
 
 # Function for generating LLM response
 def generate_response(prompt_input, email, passwd):

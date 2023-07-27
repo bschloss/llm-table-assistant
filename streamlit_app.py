@@ -14,7 +14,7 @@ from langchain.prompts import (
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
-from langchain.output_parsers import PydanticOutputParser
+from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
 from pydantic import BaseModel, Field, validator
 from typing import Dict, List
 
@@ -22,7 +22,21 @@ class SuggestedMapping(BaseModel):
     map: Dict[str, List[str]]
 
 
+# Set up LLM and store in session
+if 'chat_model' not in st.session_state.keys():
+    OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
+    TEMPERATURE = 0
+    MODEL = "gpt-3.5-turbo-0613"
+    chat_model = ChatOpenAI(
+        openai_api_key=OPEN_AI_KEY,
+        temperature=TEMPERATURE,
+        model=MODEL
+    )
+    st.session_state.chat_model = chat_model
+
+
 parser = PydanticOutputParser(pydantic_object=SuggestedMapping)
+parser = OutputFixingParser.from_llm(parser=parser, llm=st.session_state.chat_model)
 
 # App title
 st.set_page_config(page_title="🤗💬 HugChat")
@@ -37,19 +51,6 @@ if "messages" not in st.session_state.keys():
     content += "\nPlease upload a template file in csv format with the desired column names and data formats."
     content += "\nThen upload a source file that you would like converted to the template format."
     st.session_state.messages = [{"role": "assistant", "content": content}]
-
-
-# Set up Chat Model and store in session
-if 'chat_model' not in st.session_state.keys():
-    OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
-    TEMPERATURE = 0
-    MODEL = "gpt-3.5-turbo-0613"
-    chat_model = ChatOpenAI(
-        openai_api_key=OPEN_AI_KEY,
-        temperature=TEMPERATURE,
-        model=MODEL
-    )
-    st.session_state.chat_model = chat_model
 
 
 # Set up memory and store in session

@@ -99,7 +99,7 @@ for message in st.session_state.messages:
 
 
 # Get Template and Source CSV Files
-if st.session_state.template is None or st.session_state.target is not None:
+if st.session_state.template is None or st.session_state.target is None:
     with st.form('data_upload'):
         uploader_message = "Template CSV"
         st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')
@@ -109,33 +109,35 @@ if st.session_state.template is None or st.session_state.target is not None:
 
 
 if st.session_state.process_tables:
-    with st.spinner("Processing Tables..."):
-        if st.session_state.template_df is None:
-            try:
-                st.session_state.template_df = load_csv(st.session_state.template)
-                st.dataframe(st.session_state.template_df)
-                st.session_state.template_displayed = 1
-            except Exception as e:
-                with sidebar.chat_message("assistant"):
-                    response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
-                    response += '\nPlease double check your file and retry the upload'
-                    sidebar.write(response)
-                st.session_state.template_df = None
-                message = {"role": "assistant", "content": response}
-                st.session_state.messages.append(message)
-        if st.session_state.target_df is None:
-            try:
-                st.session_state.target_df = load_csv(st.session_state.target)
-                st.write(st.session_state.target_df)
-                st.session_state.target_displayed = 1
-            except Exception as e:
-                with sidebar.chat_message("assistant"):
-                    response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
-                    response += '\nPlease double check your file and retry the upload'
-                    sidebar.write(response)
-                st.session_state.target_df = None
-                message = {"role": "assistant", "content": response}
-                st.session_state.messages.append(message)
+    if st.session_state.template_df is None or st.session_state.target_df is None:
+        with st.spinner("Processing Tables..."):
+            if st.session_state.template_df is None:
+                try:
+                    st.session_state.template_df = load_csv(st.session_state.template)
+                    st.session_state.template_displayed = 1
+                except Exception as e:
+                    with sidebar.chat_message("assistant"):
+                        response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
+                        response += '\nPlease double check your file and retry the upload'
+                        sidebar.write(response)
+                    st.session_state.template_df = None
+                    message = {"role": "assistant", "content": response}
+                    st.session_state.messages.append(message)
+            if st.session_state.target_df is None:
+                try:
+                    st.session_state.target_df = load_csv(st.session_state.target)
+                    st.session_state.target_displayed = 1
+                except Exception as e:
+                    with sidebar.chat_message("assistant"):
+                        response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
+                        response += '\nPlease double check your file and retry the upload'
+                        sidebar.write(response)
+                    st.session_state.target_df = None
+                    message = {"role": "assistant", "content": response}
+                    st.session_state.messages.append(message)
+        col1, col2 = st.columns(2)
+        col1.dataframe(st.session_state.template_df)
+        col2.dataframe(st.session_state.target_df)
 
 
 

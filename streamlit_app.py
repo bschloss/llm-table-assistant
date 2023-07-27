@@ -156,10 +156,9 @@ if (
         st.session_state.tables_processed = 1
 
 
-if not st.session_state.columns_disamb:
+if not st.session_state.columns_disamb and st.session_state.tables_processed:
         with sidebar.chat_message("assistant"):
             with sidebar.form("disambiguate_columns"):
-
                 for col in st.session_state.template_df.columns:
                     choices = suggested_mapping.map[col]
                     if len(choices) > 1:
@@ -168,7 +167,7 @@ if not st.session_state.columns_disamb:
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
-else:
+elif st.session_state.columns_disamb and st.session_state.tables_processed:
     with sidebar.chat_message('assistant'):
         resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"
         for col, val in st.session_state.col2val.items():

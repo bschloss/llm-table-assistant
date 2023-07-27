@@ -69,26 +69,25 @@ if template is not None:
     message = {"role": "assistant", "content": response}
     st.session_state.messages.append(message)
 
-csv_target = None
-if csv_template is not None:
-    uploader_message = "Now please upload another CSV file that you would like converted to the template format"
-    target = col2.file_uploader(uploader_message, key='CSVTarget')
-    if target is not None:
-        try:
-            csv_target = load_csv(target)
-            with st.chat_message("assistant"):
-                response = 'Thank you!'
-                st.write(response)
-        except Exception as e:
-            with st.chat_message("assistant"):
-                response = f'Unfortunately, there was an error processing your file\n{str(e)}'
-                response += '\nPlease double check your file and retry the upload'
-                st.write(response)
-        message = {"role": "assistant", "content": response}
-        st.session_state.messages.append(message)
+
+uploader_message = "Now please upload another CSV file that you would like converted to the template format"
+target = col2.file_uploader(uploader_message, key='CSVTarget')
+if target is not None:
+    try:
+        csv_target = load_csv(target)
+        with st.chat_message("assistant"):
+            response = 'Thank you!'
+            st.write(response)
+    except Exception as e:
+        with st.chat_message("assistant"):
+            response = f'Unfortunately, there was an error processing your file\n{str(e)}'
+            response += '\nPlease double check your file and retry the upload'
+            st.write(response)
+    message = {"role": "assistant", "content": response}
+    st.session_state.messages.append(message)
 
 
-if csv_target is not None:
+if csv_template is not None and csv_target is not None:
     template_columns = list(csv_template.columns)
     target_columns = list(csv_target.columns)
 

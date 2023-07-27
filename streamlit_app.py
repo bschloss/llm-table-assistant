@@ -105,8 +105,6 @@ if st.session_state.template is None or st.session_state.target is not None:
         st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')
         uploader_message = "Source CSV (to be converted to the template format)"
         st.session_state.target = st.file_uploader(uploader_message, key='CSVTarget')
-else:
-    with st.form('data_upload'):
         process_tables = st.form_submit_button("Process Tables")
 
 

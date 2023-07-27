@@ -22,23 +22,10 @@ from typing import Dict, List
 st.set_page_config(page_title="🤗💬 HugChat")
 
 col1, col2 = st.columns(2)
-
-# # Hugging Face Credentials
+sidebar = st.sidebar
+# AI Chat Assistant
 # with st.sidebar:
-#     st.title('🤗💬 HugChat')
-#     if ('EMAIL' in st.secrets) and ('PASS' in st.secrets):
-#         st.success('HuggingFace Login credentials already provided!', icon='✅')
-#         hf_email = st.secrets['EMAIL']
-#         hf_pass = st.secrets['PASS']
-#     else:
-#         hf_email = st.text_input('Enter E-mail:', type='password')
-#         hf_pass = st.text_input('Enter password:', type='password')
-#         if not (hf_email and hf_pass):
-#             st.warning('Please enter your credentials!', icon='⚠️')
-#         else:
-#             st.success('Proceed to entering your prompt message!', icon='👉')
-#     st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-an-llm-powered-chatbot-with-streamlit/)!')
-#
+
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     content = "I'm Tabby, a helpful AI assistant for organizing your data how you want."
@@ -48,8 +35,8 @@ if "messages" not in st.session_state.keys():
 
 # Display chat messages
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+    with sidebar.chat_message(message["role"]):
+        sidebar.write(message["content"])
 
 
 # Get Template and Target CSV Files
@@ -60,13 +47,13 @@ if template is not None:
     try:
         template_df = load_csv(template)
     except Exception as e:
-        with st.chat_message("assistant"):
+        with sidebar.chat_message("assistant"):
             response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
-            st.write(response)
-            csv_template = None
-            message = {"role": "assistant", "content": response}
-            st.session_state.messages.append(message)
+            sidebar.write(response)
+        template_df = None
+        message = {"role": "assistant", "content": response}
+        st.session_state.messages.append(message)
 
 
 uploader_message = "Upload a source file to convert to the template format"
@@ -75,12 +62,13 @@ if target is not None:
     try:
         target_df = load_csv(target)
     except Exception as e:
-        with st.chat_message("assistant"):
+        with sidebar.chat_message("assistant"):
             response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
-            st.write(response)
-            message = {"role": "assistant", "content": response}
-            st.session_state.messages.append(message)
+            sidebar.write(response)
+        target_df = None
+        message = {"role": "assistant", "content": response}
+        st.session_state.messages.append(message)
 
 
 if template_df is not None and target_df is not None:
@@ -124,14 +112,14 @@ if template_df is not None and target_df is not None:
     qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
     response = qa.run(input=input.to_string())
     suggested_mapping = parser.parse(response)
-    with st.chat_message("assistant"):
+    with sidebar.chat_message("assistant"):
         temp_cols = ', '.join(template_columns)
         targ_cols = ', '.join(target_columns)
         mapping_text = json.dumps(suggested_mapping.map, indent=4)
         response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
         response += f' in the other table you uploaded:\n{targ_cols}.\n'
         response += f'Based on this information, I would suggest the following mapping:\n{mapping_text}'
-        st.write(response)
+        sidebar.write(response)
 
 
 

@@ -175,7 +175,11 @@ elif st.session_state.columns_disamb and st.session_state.suggested_mapping:
     with sidebar.chat_message('assistant'):
         resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"
         for col, val in st.session_state.col2val.items():
-            print('\t' + col + ': ' + val)
+            resp += '\t' + col + ': ' + val + '\n'
+        resp = resp.rstrip('\n')
+        with sidebar.chat_message("assistant"):
+            sidebar.write(resp)
+
 
 
 

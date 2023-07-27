@@ -96,6 +96,7 @@ if st.session_state.template is None:
 elif st.session_state.template_df is None:
     try:
         st.session_state.template_df = load_csv(st.session_state.template)
+        col1.write(st.session_state.template_df)
     except Exception as e:
         with sidebar.chat_message("assistant"):
             response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
@@ -115,6 +116,7 @@ if st.session_state.target is None:
 elif st.session_state.target_df is None:
     try:
         st.session_state.target_df = load_csv(st.session_state.target)
+        col2.write(st.session_state.target_df)
     except Exception as e:
         with sidebar.chat_message("assistant"):
             response = f'Unfortunately, there was an error processing your source file\n{str(e)}'

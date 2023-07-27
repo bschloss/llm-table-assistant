@@ -124,11 +124,11 @@ if (
         st.session_state.template_df is not None
         and st.session_state.target_df is not None
 ):
-
-if not st.session_state.suggested_mapping:
     col1.dataframe(st.session_state.template_df)
     col2.dataframe(st.session_state.target_df)
 
+
+if not st.session_state.suggested_mapping:
     with sidebar.chat_message("assistant"):
         with st.spinner("Thank you. Please wait while I process your tables..."):
 

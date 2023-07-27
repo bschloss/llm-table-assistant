@@ -85,8 +85,8 @@ if target is not None:
 
 if template_df is not None and target_df is not None:
     with st.spinner("Thank you. Please wait while we load your tables..."):
-        col1.dataframe(template)
-        col2.dataframe(target)
+        col1.dataframe(template_df)
+        col2.dataframe(target_df)
 
     template_columns = list(template_df.columns)
     target_columns = list(target_df.columns)

@@ -55,6 +55,7 @@ for message in st.session_state.messages:
 # Get Template and Target CSV Files
 template = col1.file_uploader("Upload a template in csv format.", key='CSVTemplate')
 csv_template = None
+csv_target = None
 if template is not None:
     try:
         csv_template = load_csv(template)

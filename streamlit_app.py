@@ -72,54 +72,54 @@ if target is not None:
 
 
 if template_df is not None and target_df is not None:
-    with st.spinner("Thank you. Please wait while I process your tables..."):
-        col1.dataframe(template_df)
-        col2.dataframe(target_df)
+    with sidebar.chat_message("assistant"):
+        with st.spinner("Thank you. Please wait while I process your tables..."):
+            col1.dataframe(template_df)
+            col2.dataframe(target_df)
 
-        template_columns = list(template_df.columns)
-        target_columns = list(target_df.columns)
+            template_columns = list(template_df.columns)
+            target_columns = list(target_df.columns)
 
-        # Set up Chat Model and store in session
-        OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
-        TEMPERATURE = 0
-        MODEL = "gpt-3.5-turbo-0613"
-        chat_model = ChatOpenAI(
-            openai_api_key=OPEN_AI_KEY,
-            temperature=TEMPERATURE,
-            model=MODEL
-        )
-        st.session_state['chat_model'] = chat_model
+            # Set up Chat Model and store in session
+            OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
+            TEMPERATURE = 0
+            MODEL = "gpt-3.5-turbo-0613"
+            chat_model = ChatOpenAI(
+                openai_api_key=OPEN_AI_KEY,
+                temperature=TEMPERATURE,
+                model=MODEL
+            )
+            st.session_state['chat_model'] = chat_model
 
-        # Set up parser and store in session
-        class SuggestedMapping(BaseModel):
-            map: Dict[str, List[str]]
-        parser = PydanticOutputParser(pydantic_object=SuggestedMapping)
-        st.session_state['parser'] = parser
+            # Set up parser and store in session
+            class SuggestedMapping(BaseModel):
+                map: Dict[str, List[str]]
+            parser = PydanticOutputParser(pydantic_object=SuggestedMapping)
+            st.session_state['parser'] = parser
 
-        # Set up memory and store in session
-        st.session_state['memory'] = ConversationBufferMemory(memory_key="history", return_messages=True)
+            # Set up memory and store in session
+            st.session_state['memory'] = ConversationBufferMemory(memory_key="history", return_messages=True)
 
-        tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
-        tmp += " columns in the target table. The template table columns are: {template_columns}."
-        tmp += "\n{format_instructions}\n"
-        tmp += "Here are the target table columns: {target_columns}."
-        prompt = PromptTemplate.from_template(tmp)
-        input = prompt.format_prompt(
-            template_columns=', '.join(template_columns),
-            format_instructions=parser.get_format_instructions(),
-            target_columns=', '.join(target_columns)
-        )
-        qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
-        response = qa.run(input=input.to_string())
-        suggested_mapping = parser.parse(response)
-        with sidebar.chat_message("assistant"):
+            tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
+            tmp += " columns in the target table. The template table columns are: {template_columns}."
+            tmp += "\n{format_instructions}\n"
+            tmp += "Here are the target table columns: {target_columns}."
+            prompt = PromptTemplate.from_template(tmp)
+            input = prompt.format_prompt(
+                template_columns=', '.join(template_columns),
+                format_instructions=parser.get_format_instructions(),
+                target_columns=', '.join(target_columns)
+            )
+            qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
+            response = qa.run(input=input.to_string())
+            suggested_mapping = parser.parse(response)
             temp_cols = ', '.join(template_columns)
             targ_cols = ', '.join(target_columns)
             mapping_text = json.dumps(suggested_mapping.map, indent=4)
-            response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
-            response += f' in the other table you uploaded:\n{targ_cols}.\n'
-            response += f'Based on this information, I would suggest the following mapping:\n{mapping_text}'
-            sidebar.write(response)
+        response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
+        response += f' in the other table you uploaded:\n{targ_cols}.\n'
+        response += f'Based on this information, I would suggest the following mapping:\n{mapping_text}'
+        sidebar.write(response)
 
 
 # Function for generating LLM response

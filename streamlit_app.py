@@ -94,8 +94,6 @@ if st.session_state.template is None:
     uploader_message = "Upload a template in csv format."
     st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
 elif st.session_state.template_df is None:
-    with st.spinner():
-        time.sleep(.5)
     try:
         st.session_state.template_df = load_csv(st.session_state.template)
     except Exception as e:
@@ -113,8 +111,6 @@ if st.session_state.target is None:
     uploader_message = "Upload a source file to convert to the template format"
     st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
 elif st.session_state.target_df is None:
-    with st.spinner():
-        time.sleep(.5)
     try:
         st.session_state.target_df = load_csv(st.session_state.target)
     except Exception as e:
@@ -132,7 +128,11 @@ if (
         and st.session_state.target_df is not None
 ):
     col1.dataframe(st.session_state.template_df)
+    with st.spinner():
+        time.sleep(.5)
     col2.dataframe(st.session_state.target_df)
+    with st.spinner():
+        time.sleep(.5)
     if not st.session_state.suggested_mapping:
         with sidebar.chat_message("assistant"):
             with st.spinner("Thank you. Please wait while I process your tables..."):

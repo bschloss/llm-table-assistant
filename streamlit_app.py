@@ -105,7 +105,7 @@ elif st.session_state.template_df is None:
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
 else:
-    col1.dataframe(st.session_state.template_df)
+    col1.write(st.session_state.template_df)
 
 
 # Get Target CSV File
@@ -124,7 +124,7 @@ elif st.session_state.target_df is None:
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
 else:
-    col2.dataframe(st.session_state.target_df)
+    col2.write(st.session_state.target_df)
 
 
 if (

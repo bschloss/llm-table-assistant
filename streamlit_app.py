@@ -86,10 +86,11 @@ for message in st.session_state.messages:
         sidebar.write(message["content"])
 
 
-uploader_message = "Upload a template in csv format."
-st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
-# Get Template and Target CSV Files
-if st.session_state.template is not None:
+# Get Template CSV File
+if st.session_state.template is None:
+    uploader_message = "Upload a template in csv format."
+    st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
+elif st.session_state.template_df is None:
     try:
         st.session_state.template_df = load_csv(st.session_state.template)
     except Exception as e:
@@ -100,11 +101,14 @@ if st.session_state.template is not None:
         st.session_state.template_df = None
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
+else:
+    col1.dataframe(st.session_state.template_df)
 
-
-uploader_message = "Upload a source file to convert to the template format"
-st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
-if st.session_state.target is not None:
+# Get Target CSV File
+if st.session_state.target is None:
+    uploader_message = "Upload a source file to convert to the template format"
+    st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
+elif st.session_state.taret_df is None:
     try:
         st.session_state.target_df = load_csv(st.session_state.target)
     except Exception as e:
@@ -115,6 +119,8 @@ if st.session_state.target is not None:
         st.session_state.target_df = None
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
+else:
+    col2.dataframe(st.session_state.target_df)
 
 
 if (
@@ -124,8 +130,7 @@ if (
 ):
     with sidebar.chat_message("assistant"):
         with st.spinner("Thank you. Please wait while I process your tables..."):
-            col1.dataframe(st.session_state.template_df)
-            col2.dataframe(st.session_state.target_df)
+
 
             template_columns = list(st.session_state.template_df.columns)
             target_columns = list(st.session_state.target_df.columns)

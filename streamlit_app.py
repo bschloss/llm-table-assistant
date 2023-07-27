@@ -65,8 +65,8 @@ if template is not None:
             response += '\nPlease double check your file and retry the upload'
             st.write(response)
             csv_template = None
-    message = {"role": "assistant", "content": response}
-    st.session_state.messages.append(message)
+            message = {"role": "assistant", "content": response}
+            st.session_state.messages.append(message)
 
 
 uploader_message = "Upload a source file to convert to the template format"
@@ -79,8 +79,8 @@ if target is not None:
             response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
             st.write(response)
-    message = {"role": "assistant", "content": response}
-    st.session_state.messages.append(message)
+            message = {"role": "assistant", "content": response}
+            st.session_state.messages.append(message)
 
 
 if template_df is not None and target_df is not None:

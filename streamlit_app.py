@@ -58,6 +58,9 @@ if 'memory' not in st.session_state.keys():
     st.session_state.memory = memory
 
 
+if 'columns_disamb' not in st.session_state.keys():
+    st.session_state.columns_disamb = False
+
 # Display chat messages
 for message in st.session_state.messages:
     with sidebar.chat_message(message["role"]):

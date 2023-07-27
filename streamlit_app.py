@@ -62,7 +62,6 @@ if 'memory' not in st.session_state.keys():
 if 'columns_disamb' not in st.session_state.keys():
     st.session_state.columns_disamb = False
 
-
 if 'col2val' not in st.session_state.keys():
     st.session_state.col2val = {}
 
@@ -78,8 +77,6 @@ if 'target_df' not in st.session_state.keys():
 if 'template' not in st.session_state.keys():
     st.session_state.template = None
 
-if 'tables_processed' not in st.session_state.keys():
-    st.session_state.tables_processed = 0
 
 
 # Display chat messages
@@ -122,7 +119,7 @@ if st.session_state.target is not None:
 if (
         st.session_state.template_df is not None
         and st.session_state.target_df is not None
-        and not st.session_state.tables_processed
+        and not st.session_state.columns_disamb
 ):
     with sidebar.chat_message("assistant"):
         with st.spinner("Thank you. Please wait while I process your tables..."):
@@ -153,6 +150,8 @@ if (
         response += f'Based on this information, I would suggest the following possible mappings.'
         response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
         sidebar.write(response)
+        message = {"role": "assistant", "content": response}
+        st.session_state.messages.append(message)
 
         with sidebar.chat_message("assistant"):
             with sidebar.form("disambiguate_columns"):
@@ -165,7 +164,6 @@ if (
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
-    st.session_state.tables_processed = 1
 
 
 if st.session_state.columns_disamb:

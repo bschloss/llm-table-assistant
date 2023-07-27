@@ -118,8 +118,17 @@ if template_df is not None and target_df is not None:
             mapping_text = json.dumps(suggested_mapping.map, indent=4)
         response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
         response += f' in the other table you uploaded:\n{targ_cols}.\n'
-        response += f'Based on this information, I would suggest the following mapping:\n{mapping_text}'
+        response += f'Based on this information, I would suggest the following possible mappings.'
+        response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
         sidebar.write(response)
+
+        with sidebar.chat_message("assistant"):
+            with sidebar.form("disambiguate_columns"):
+                for col in template_df.columns:
+                    choices = suggested_mapping.map[col]
+                    if len(choices) > 1:
+                        sidebar.radio(col, choices)
+
 
 
 # Function for generating LLM response

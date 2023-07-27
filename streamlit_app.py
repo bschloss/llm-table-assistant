@@ -42,7 +42,8 @@ col1, col2 = st.columns(2)
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     content = "I'm Tabby, a helpful AI assistant for organizing your data how you want."
-    content += "\nPlease upload a template file in csv format with the desired column names and data formats.\n"
+    content += "\nPlease upload a template file in csv format with the desired column names and data formats."
+    content += "\nThen upload a source file that you would like converted to the template format."
     st.session_state.messages = [{"role": "assistant", "content": content}]
 
 # Display chat messages
@@ -70,7 +71,7 @@ if template is not None:
     st.session_state.messages.append(message)
 
 
-uploader_message = "Now please upload another CSV file that you would like converted to the template format"
+uploader_message = "Upload a source file to convert to the template format"
 target = col2.file_uploader(uploader_message, key='CSVTarget')
 if target is not None:
     try:

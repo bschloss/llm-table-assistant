@@ -79,6 +79,12 @@ if 'template' not in st.session_state.keys():
 if 'process_tables' not in st.session_state.keys():
     st.session_state.process_tables = 0
 
+if 'template_displayed' not in st.session_state.keys():
+    st.session_state.template_displayed = 0
+
+if 'target_displayed' not in st.session_state.keys():
+    st.session_state.target_displayed = 0
+
 if 'suggested_mapping' not in st.session_state.keys():
     st.session_state.suggested_mapping = {}
 
@@ -109,6 +115,7 @@ if st.session_state.process_tables:
         try:
             st.session_state.template_df = load_csv(st.session_state.template)
             st.dataframe(st.session_state.template_df)
+            st.session_state.template_displayed = 1
         except Exception as e:
             with sidebar.chat_message("assistant"):
                 response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
@@ -120,8 +127,8 @@ if st.session_state.process_tables:
     if st.session_state.target_df is None:
         try:
             st.session_state.target_df = load_csv(st.session_state.target)
-            time.sleep(5)
             st.write(st.session_state.target_df)
+            st.session_state.target_displayed = 1
         except Exception as e:
             with sidebar.chat_message("assistant"):
                 response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
@@ -134,8 +141,8 @@ if st.session_state.process_tables:
 
 
 if (
-        st.session_state.template_df is not None
-        and st.session_state.target_df is not None
+        st.session_state.template_displayed
+        and st.session_state.target_displayed
         and not st.session_state.suggested_mapping
 ):
         with sidebar.chat_message("assistant"):

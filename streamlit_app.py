@@ -1,3 +1,4 @@
+import os
 import json
 import streamlit as st
 from hugchat import hugchat
@@ -90,7 +91,7 @@ if csv_target is not None:
     target_columns = list(csv_target.columns)
 
     # Set up Chat Model and store in session
-    OPEN_AI_KEY = json.load(open('/Users/benjaminschloss/llm-table-formatter/openai_key.json', 'r'))
+    OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
     TEMPERATURE = 0
     MODEL = "gpt-3.5-turbo-0613"
     chat_model = ChatOpenAI(

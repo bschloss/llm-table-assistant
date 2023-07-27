@@ -87,11 +87,11 @@ for message in st.session_state.messages:
         sidebar.write(message["content"])
 
 
+uploader_message = "Upload a template in csv format."
+st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
 # Get Template and Target CSV Files
-if st.session_state.template is None:
+if st.session_state.template is not None:
     try:
-        uploader_message = "Upload a template in csv format."
-        st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
         st.session_state.template_df = load_csv(st.session_state.template)
     except Exception as e:
         with sidebar.chat_message("assistant"):
@@ -103,10 +103,10 @@ if st.session_state.template is None:
         st.session_state.messages.append(message)
 
 
-if st.session_state.target is None:
+uploader_message = "Upload a source file to convert to the template format"
+st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
+if st.session_state.target is not None:
     try:
-        uploader_message = "Upload a source file to convert to the template format"
-        st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
         st.session_state.target_df = load_csv(st.session_state.target)
     except Exception as e:
         with sidebar.chat_message("assistant"):

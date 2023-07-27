@@ -94,7 +94,7 @@ if st.session_state.template is None:
     uploader_message = "Upload a template in csv format."
     st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
     with st.spinner():
-        time.wait(.5)
+        time.sleep(.5)
 elif st.session_state.template_df is None:
     try:
         st.session_state.template_df = load_csv(st.session_state.template)
@@ -113,7 +113,7 @@ if st.session_state.target is None:
     uploader_message = "Upload a source file to convert to the template format"
     st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
     with st.spinner():
-        time.wait(.5)
+        time.sleep(.5)
 elif st.session_state.target_df is None:
     try:
         st.session_state.target_df = load_csv(st.session_state.target)

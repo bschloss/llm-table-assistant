@@ -172,7 +172,7 @@ if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
 
 elif st.session_state.columns_disamb and st.session_state.suggested_mapping:
     with sidebar.chat_message('assistant'):
-        response = "Got it. Thank you for choosing the columns. I have the following mapping:\n\n"
+        response = "Got it. Thank you for choosing the columns. I have the following mapping:\n\n\t\t"
         for col, val in st.session_state.col2val.items():
             response += '\t\t' + col + ': ' + val + '\n\n'
         response = response.rstrip('\n')

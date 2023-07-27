@@ -27,10 +27,9 @@ parser = PydanticOutputParser(pydantic_object=SuggestedMapping)
 # App title
 st.set_page_config(page_title="🤗💬 HugChat")
 
+# Layout
 col1, col2 = st.columns(2)
 sidebar = st.sidebar
-# AI Chat Assistant
-# with st.sidebar:
 
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
@@ -38,6 +37,7 @@ if "messages" not in st.session_state.keys():
     content += "\nPlease upload a template file in csv format with the desired column names and data formats."
     content += "\nThen upload a source file that you would like converted to the template format."
     st.session_state.messages = [{"role": "assistant", "content": content}]
+
 
 # Set up Chat Model and store in session
 if 'chat_model' not in st.session_state.keys():
@@ -57,9 +57,14 @@ if 'memory' not in st.session_state.keys():
     memory = ConversationBufferMemory(memory_key="history", return_messages=True)
     st.session_state.memory = memory
 
-
+# Set up logical gate for column disambiguation
 if 'columns_disamb' not in st.session_state.keys():
     st.session_state.columns_disamb = False
+
+
+if 'col2val' not in st.session_state.keys():
+    st.session_state.col2val = {}
+
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -138,10 +143,13 @@ if (
 
         with sidebar.chat_message("assistant"):
             with sidebar.form("disambiguate_columns"):
+
                 for col in st.session_state.template_df.columns:
                     choices = suggested_mapping.map[col]
                     if len(choices) > 1:
-                        sidebar.radio(col, choices)
+                        st.session_state.col2val[col] = sidebar.radio(col, choices)
+                    else:
+                        st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
     st.session_state.tables_processed = 1
@@ -149,7 +157,9 @@ if (
 
 if st.session_state.columns_disamb:
     with sidebar.chat_message('assistant'):
-        "Got it. Thank you for choosing the columns."
+        resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"
+        for col, val in st.session_state.col2val.items():
+            print('\t' + col + ': ' + val)
 
 
 

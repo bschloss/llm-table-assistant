@@ -95,7 +95,7 @@ if csv_target is not None:
     TEMPERATURE = 0
     MODEL = "gpt-3.5-turbo-0613"
     chat_model = ChatOpenAI(
-        openai_api_key=OPEN_AI_KEY['OPEN_AI_KEY'],
+        openai_api_key=OPEN_AI_KEY,
         temperature=TEMPERATURE,
         model=MODEL
     )

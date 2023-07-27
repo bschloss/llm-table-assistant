@@ -124,8 +124,8 @@ elif st.session_state.target_df is None:
 
 
 if (
-        st.session_state.template_df
-        and st.session_state.target_df
+        st.session_state.template_df is not None
+        and st.session_state.target_df is not None
 ):
     col1.dataframe(st.session_state.template_df)
     col2.dataframe(st.session_state.target_df)

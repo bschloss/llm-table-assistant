@@ -77,6 +77,8 @@ if 'target_df' not in st.session_state.keys():
 if 'template' not in st.session_state.keys():
     st.session_state.template = None
 
+if 'tables_processed' not in st.session_state.keys():
+    st.session_state.tables_processed = 0
 
 
 # Display chat messages
@@ -119,7 +121,7 @@ if st.session_state.target is not None:
 if (
         st.session_state.template_df is not None
         and st.session_state.target_df is not None
-        and not st.session_state.columns_disamb
+        and not st.session_state.tables_processed
 ):
     with sidebar.chat_message("assistant"):
         with st.spinner("Thank you. Please wait while I process your tables..."):
@@ -144,7 +146,6 @@ if (
             suggested_mapping = parser.parse(response)
             temp_cols = ', '.join(template_columns)
             targ_cols = ', '.join(target_columns)
-            mapping_text = json.dumps(suggested_mapping.map, indent=4)
         response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
         response += f' in the other table you uploaded:\n{targ_cols}.\n'
         response += f'Based on this information, I would suggest the following possible mappings.'
@@ -152,7 +153,10 @@ if (
         sidebar.write(response)
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
+        st.session_state.tables_processed = 1
 
+
+if not st.session_state.columns_disamb:
         with sidebar.chat_message("assistant"):
             with sidebar.form("disambiguate_columns"):
 
@@ -164,9 +168,7 @@ if (
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
-
-
-if st.session_state.columns_disamb:
+else:
     with sidebar.chat_message('assistant'):
         resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"
         for col, val in st.session_state.col2val.items():

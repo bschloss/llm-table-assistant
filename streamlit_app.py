@@ -65,6 +65,21 @@ if 'columns_disamb' not in st.session_state.keys():
 if 'col2val' not in st.session_state.keys():
     st.session_state.col2val = {}
 
+if 'template_df' not in st.session_state.keys():
+    st.session_state.template_df = None
+
+if 'target' not in st.session_state.keys():
+    st.session_state.target = None
+
+if 'target_df' not in st.session_state.keys():
+    st.session_state.target_df = None
+
+if 'template' not in st.session_state.keys():
+    st.session_state.template = None
+
+if 'tables_processed' not in st.session_state.keys():
+    st.session_state.tables_processed = 0
+
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -73,12 +88,10 @@ for message in st.session_state.messages:
 
 
 # Get Template and Target CSV Files
-st.session_state.template = col1.file_uploader("Upload a template in csv format.", key='CSVTemplate')
-st.session_state.template_df = None
-st.session_state.target_df = None
-st.session_state.tables_processed = 0
-if st.session_state.template is not None:
+if st.session_state.template is None:
     try:
+        uploader_message = "Upload a template in csv format."
+        st.session_state.template = col1.file_uploader(uploader_message, key='CSVTemplate')
         st.session_state.template_df = load_csv(st.session_state.template)
     except Exception as e:
         with sidebar.chat_message("assistant"):
@@ -90,10 +103,10 @@ if st.session_state.template is not None:
         st.session_state.messages.append(message)
 
 
-uploader_message = "Upload a source file to convert to the template format"
-st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
-if st.session_state.target is not None:
+if st.session_state.target is None:
     try:
+        uploader_message = "Upload a source file to convert to the template format"
+        st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
         st.session_state.target_df = load_csv(st.session_state.target)
     except Exception as e:
         with sidebar.chat_message("assistant"):
@@ -103,7 +116,6 @@ if st.session_state.target is not None:
         st.session_state.target_df = None
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
-
 
 
 if (

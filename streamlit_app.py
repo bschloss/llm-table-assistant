@@ -129,10 +129,10 @@ if (
 ):
     col1.dataframe(st.session_state.template_df)
     with st.spinner():
-        time.sleep(.5)
+        time.sleep(2.5)
     col2.dataframe(st.session_state.target_df)
     with st.spinner():
-        time.sleep(.5)
+        time.sleep(2.5)
     if not st.session_state.suggested_mapping:
         with sidebar.chat_message("assistant"):
             with st.spinner("Thank you. Please wait while I process your tables..."):

@@ -151,9 +151,7 @@ if not st.session_state.suggested_mapping:
             st.session_state.suggested_mapping = parser.parse(response)
             temp_cols = ', '.join(template_columns)
             targ_cols = ', '.join(target_columns)
-        response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
-        response += f' in the other table you uploaded:\n{targ_cols}.\n'
-        response += f'Based on this information, I would suggest the following possible mappings.'
+        response =  f'Based on the column names in the two tables, I would suggest the following possible mappings.'
         response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
         sidebar.write(response)
         message = {"role": "assistant", "content": response}
@@ -171,16 +169,20 @@ if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
+
 elif st.session_state.columns_disamb and st.session_state.suggested_mapping:
     with sidebar.chat_message('assistant'):
-        resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"
-        for col, val in st.session_state.col2val.items():
-            resp += '\t' + col + ': ' + val + '<br>'
-        response = resp.rstrip('\n')
+        response = "Got it. Thank you for choosing the columns. I have the following mapping:"
         with sidebar.chat_message("assistant"):
             sidebar.write(response)
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
+        for col, val in st.session_state.col2val.items():
+            response = col + ': ' + val
+            with sidebar.chat_message("assistant"):
+                sidebar.write(response)
+            message = {"role": "assistant", "content": response}
+            st.session_state.messages.append(message)
 
 
 

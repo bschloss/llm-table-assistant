@@ -21,22 +21,24 @@ from typing import Dict, List
 # App title
 st.set_page_config(page_title="🤗💬 HugChat")
 
-# Hugging Face Credentials
-with st.sidebar:
-    st.title('🤗💬 HugChat')
-    if ('EMAIL' in st.secrets) and ('PASS' in st.secrets):
-        st.success('HuggingFace Login credentials already provided!', icon='✅')
-        hf_email = st.secrets['EMAIL']
-        hf_pass = st.secrets['PASS']
-    else:
-        hf_email = st.text_input('Enter E-mail:', type='password')
-        hf_pass = st.text_input('Enter password:', type='password')
-        if not (hf_email and hf_pass):
-            st.warning('Please enter your credentials!', icon='⚠️')
-        else:
-            st.success('Proceed to entering your prompt message!', icon='👉')
-    st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-an-llm-powered-chatbot-with-streamlit/)!')
-    
+col1, col2 = st.columns(2)
+
+# # Hugging Face Credentials
+# with st.sidebar:
+#     st.title('🤗💬 HugChat')
+#     if ('EMAIL' in st.secrets) and ('PASS' in st.secrets):
+#         st.success('HuggingFace Login credentials already provided!', icon='✅')
+#         hf_email = st.secrets['EMAIL']
+#         hf_pass = st.secrets['PASS']
+#     else:
+#         hf_email = st.text_input('Enter E-mail:', type='password')
+#         hf_pass = st.text_input('Enter password:', type='password')
+#         if not (hf_email and hf_pass):
+#             st.warning('Please enter your credentials!', icon='⚠️')
+#         else:
+#             st.success('Proceed to entering your prompt message!', icon='👉')
+#     st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-an-llm-powered-chatbot-with-streamlit/)!')
+#
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     content = "I'm Tabby, a helpful AI assistant for organizing your data how you want."
@@ -50,7 +52,7 @@ for message in st.session_state.messages:
 
 
 # Get Template and Target CSV Files
-template = st.file_uploader("Upload a template in csv format.", key='CSVTemplate')
+template = col1.file_uploader("Upload a template in csv format.", key='CSVTemplate')
 csv_template = None
 if template is not None:
     try:
@@ -70,7 +72,7 @@ if template is not None:
 csv_target = None
 if csv_template is not None:
     uploader_message = "Now please upload another CSV file that you would like converted to the template format"
-    target = st.file_uploader(uploader_message, key='CSVTarget')
+    target = col2.file_uploader(uploader_message, key='CSVTarget')
     if target is not None:
         try:
             csv_target = load_csv(target)
@@ -126,7 +128,7 @@ if csv_target is not None:
     with st.chat_message("assistant"):
         temp_cols = ', '.join(template_columns)
         targ_cols = ', '.join(target_columns)
-        mapping_text = json.dumps(suggested_mapping, indent=4)
+        mapping_text = json.dumps(suggested_mapping.map, indent=4)
         response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
         response += f' in the other table you uploaded:\n{targ_cols}.\n'
         response += f'Based on this information, I would suggest the following mapping:\n{mapping_text}'

@@ -3,3 +3,4 @@ hugchat==0.0.8
 pandas
 langchain
 openai
+tabulate

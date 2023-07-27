@@ -42,7 +42,7 @@ col1, col2 = st.columns(2)
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     content = "I'm Tabby, a helpful AI assistant for organizing your data how you want."
-    content += "\nPlease upload a template file in csv format with the desired column names and data formats."
+    content += "\nPlease upload a template file in csv format with the desired column names and data formats.\n"
     st.session_state.messages = [{"role": "assistant", "content": content}]
 
 # Display chat messages

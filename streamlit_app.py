@@ -171,9 +171,7 @@ if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
-
-
-elif st.session_state.columns_disamb and st.session_state.tables_processed:
+elif st.session_state.columns_disamb and st.session_state.suggested_mapping:
     with sidebar.chat_message('assistant'):
         resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"
         for col, val in st.session_state.col2val.items():

@@ -54,17 +54,14 @@ for message in st.session_state.messages:
 
 # Get Template and Target CSV Files
 template = col1.file_uploader("Upload a template in csv format.", key='CSVTemplate')
-csv_template = None
-csv_target = None
+template_df = None
+target_df = None
 if template is not None:
     try:
-        csv_template = load_csv(template)
-        with st.chat_message("assistant"):
-            response = 'Thank you!'
-            st.write(response)
+        template_df = load_csv(template)
     except Exception as e:
         with st.chat_message("assistant"):
-            response = f'Unfortunately, there was an error processing your file\n{str(e)}'
+            response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
             st.write(response)
             csv_template = None
@@ -76,22 +73,23 @@ uploader_message = "Upload a source file to convert to the template format"
 target = col2.file_uploader(uploader_message, key='CSVTarget')
 if target is not None:
     try:
-        csv_target = load_csv(target)
-        with st.chat_message("assistant"):
-            response = 'Thank you!'
-            st.write(response)
+        target_df = load_csv(target)
     except Exception as e:
         with st.chat_message("assistant"):
-            response = f'Unfortunately, there was an error processing your file\n{str(e)}'
+            response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
             st.write(response)
     message = {"role": "assistant", "content": response}
     st.session_state.messages.append(message)
 
 
-if csv_template is not None and csv_target is not None:
-    template_columns = list(csv_template.columns)
-    target_columns = list(csv_target.columns)
+if template_df is not None and target_df is not None:
+    with st.spinner("Thank you. Please wait while we load your tables..."):
+        col1.dataframe(template)
+        col2.dataframe(target)
+
+    template_columns = list(template_df.columns)
+    target_columns = list(target_df.columns)
 
     # Set up Chat Model and store in session
     OPEN_AI_KEY = os.environ['OPEN_AI_KEY']

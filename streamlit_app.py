@@ -66,6 +66,7 @@ if template is not None:
     message = {"role": "assistant", "content": response}
     st.session_state.messages.append(message)
 
+csv_target = None
 if csv_template is not None:
     uploader_message = "Now please upload another CSV file that you would like converted to the template format"
     target = st.file_uploader(uploader_message, key='CSVTarget')

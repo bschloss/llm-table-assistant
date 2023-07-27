@@ -80,6 +80,9 @@ if 'template' not in st.session_state.keys():
 if 'suggested_mapping' not in st.session_state.keys():
     st.session_state.suggested_mapping = {}
 
+if 'final_mapping' not in st.session_state.keys():
+    st.session_state.final_mapping = {}
+
 # Display chat messages
 for message in st.session_state.messages:
     with sidebar.chat_message(message["role"]):
@@ -169,18 +172,17 @@ if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
-
-elif st.session_state.columns_disamb and st.session_state.suggested_mapping:
+elif st.session_state.final_mapping:
     with sidebar.chat_message('assistant'):
         response = "Got it. Thank you for choosing the columns. I have the following mapping:\n\n"
         for col, val in st.session_state.col2val.items():
-            response += col + ': ' + val + '\n\n'
+            response += val + ': ' + col + '\n\n'
+            st.session_state.final_mapping[val] = col
         response = response.rstrip('\n')
         with sidebar.chat_message("assistant"):
             sidebar.write(response)
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
-
 
 
 

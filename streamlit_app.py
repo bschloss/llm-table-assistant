@@ -124,44 +124,39 @@ elif st.session_state.target_df is None:
 
 
 if (
-        st.session_state.template_df is not None
-        and st.session_state.target_df is not None
+        st.session_state.template_df
+        and st.session_state.target_df
 ):
     col1.dataframe(st.session_state.template_df)
     col2.dataframe(st.session_state.target_df)
-
-if (
-        st.session_state.template_df is not None
-        and st.session_state.target_df is not None
-        and not st.session_state.suggested_mapping
-):
-    with sidebar.chat_message("assistant"):
-        with st.spinner("Thank you. Please wait while I process your tables..."):
+    if not st.session_state.suggested_mapping:
+        with sidebar.chat_message("assistant"):
+            with st.spinner("Thank you. Please wait while I process your tables..."):
 
 
-            template_columns = list(st.session_state.template_df.columns)
-            target_columns = list(st.session_state.target_df.columns)
+                template_columns = list(st.session_state.template_df.columns)
+                target_columns = list(st.session_state.target_df.columns)
 
-            tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
-            tmp += " columns in the target table. The template table columns are: {template_columns}."
-            tmp += "\n{format_instructions}\n"
-            tmp += "Here are the target table columns: {target_columns}."
-            prompt = PromptTemplate.from_template(tmp)
-            input = prompt.format_prompt(
-                template_columns=', '.join(template_columns),
-                format_instructions=parser.get_format_instructions(),
-                target_columns=', '.join(target_columns)
-            )
-            qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
-            response = qa.run(input=input.to_string())
-            st.session_state.suggested_mapping = parser.parse(response)
-            temp_cols = ', '.join(template_columns)
-            targ_cols = ', '.join(target_columns)
-        response =  f'Based on the column names in the two tables, I would suggest the following possible mappings.'
-        response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
-        sidebar.write(response)
-        message = {"role": "assistant", "content": response}
-        st.session_state.messages.append(message)
+                tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
+                tmp += " columns in the target table. The template table columns are: {template_columns}."
+                tmp += "\n{format_instructions}\n"
+                tmp += "Here are the target table columns: {target_columns}."
+                prompt = PromptTemplate.from_template(tmp)
+                input = prompt.format_prompt(
+                    template_columns=', '.join(template_columns),
+                    format_instructions=parser.get_format_instructions(),
+                    target_columns=', '.join(target_columns)
+                )
+                qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
+                response = qa.run(input=input.to_string())
+                st.session_state.suggested_mapping = parser.parse(response)
+                temp_cols = ', '.join(template_columns)
+                targ_cols = ', '.join(target_columns)
+            response =  f'Based on the column names in the two tables, I would suggest the following possible mappings.'
+            response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
+            sidebar.write(response)
+            message = {"role": "assistant", "content": response}
+            st.session_state.messages.append(message)
 
 
 if not st.session_state.columns_disamb and st.session_state.suggested_mapping:

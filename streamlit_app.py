@@ -72,7 +72,7 @@ if target is not None:
 
 
 if template_df is not None and target_df is not None:
-    with sidebar.spinner("Thank you. Please wait while I process your tables..."):
+    with st.spinner("Thank you. Please wait while I process your tables..."):
         col1.dataframe(template_df)
         col2.dataframe(target_df)
 

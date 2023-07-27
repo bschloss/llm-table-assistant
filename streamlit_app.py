@@ -77,9 +77,8 @@ if 'target_df' not in st.session_state.keys():
 if 'template' not in st.session_state.keys():
     st.session_state.template = None
 
-if 'tables_processed' not in st.session_state.keys():
-    st.session_state.tables_processed = 0
-
+if 'suggested_mapping' not in st.session_state.keys():
+    st.session_state.suggested_mapping = {}
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -143,7 +142,7 @@ if (
             )
             qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
             response = qa.run(input=input.to_string())
-            suggested_mapping = parser.parse(response)
+            st.session_state.suggested_mapping = parser.parse(response)
             temp_cols = ', '.join(template_columns)
             targ_cols = ', '.join(target_columns)
         response = f'I found the following columns in the template table:\n{temp_cols}\nAnd I found these columns'
@@ -153,20 +152,21 @@ if (
         sidebar.write(response)
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
-        st.session_state.tables_processed = 1
 
 
-if not st.session_state.columns_disamb and st.session_state.tables_processed:
+if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
         with sidebar.chat_message("assistant"):
             with sidebar.form("disambiguate_columns"):
                 for col in st.session_state.template_df.columns:
-                    choices = suggested_mapping.map[col]
+                    choices = st.session_state.suggested_mapping.map[col]
                     if len(choices) > 1:
                         st.session_state.col2val[col] = sidebar.radio(col, choices)
                     else:
                         st.session_state.col2val[col] = choices[0]
                 columns_disamb = st.form_submit_button("Submit")
                 st.session_state.columns_disamb = columns_disamb
+
+
 elif st.session_state.columns_disamb and st.session_state.tables_processed:
     with sidebar.chat_message('assistant'):
         resp = "Got it. Thank you for choosing the columns. I have the following mapping:\n"

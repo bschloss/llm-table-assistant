@@ -18,6 +18,12 @@ from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field, validator
 from typing import Dict, List
 
+class SuggestedMapping(BaseModel):
+    map: Dict[str, List[str]]
+
+
+parser = PydanticOutputParser(pydantic_object=SuggestedMapping)
+
 # App title
 st.set_page_config(page_title="🤗💬 HugChat")
 
@@ -33,6 +39,25 @@ if "messages" not in st.session_state.keys():
     content += "\nThen upload a source file that you would like converted to the template format."
     st.session_state.messages = [{"role": "assistant", "content": content}]
 
+# Set up Chat Model and store in session
+if 'chat_model' not in st.session_state.keys():
+    OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
+    TEMPERATURE = 0
+    MODEL = "gpt-3.5-turbo-0613"
+    chat_model = ChatOpenAI(
+        openai_api_key=OPEN_AI_KEY,
+        temperature=TEMPERATURE,
+        model=MODEL
+    )
+    st.session_state.chat_model = chat_model
+
+
+# Set up memory and store in session
+if 'memory' not in st.session_state.keys():
+    memory = ConversationBufferMemory(memory_key="history", return_messages=True)
+    st.session_state.memory = memory
+
+
 # Display chat messages
 for message in st.session_state.messages:
     with sidebar.chat_message(message["role"]):
@@ -40,65 +65,51 @@ for message in st.session_state.messages:
 
 
 # Get Template and Target CSV Files
-template = col1.file_uploader("Upload a template in csv format.", key='CSVTemplate')
-template_df = None
-target_df = None
-if template is not None:
+st.session_state.template = col1.file_uploader("Upload a template in csv format.", key='CSVTemplate')
+st.session_state.template_df = None
+st.session_state.target_df = None
+st.session_state.tables_processed = 0
+if st.session_state.template is not None:
     try:
-        template_df = load_csv(template)
+        st.session_state.template_df = load_csv(st.session_state.template)
     except Exception as e:
         with sidebar.chat_message("assistant"):
             response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
             sidebar.write(response)
-        template_df = None
+        st.session_state.template_df = None
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
 
 
 uploader_message = "Upload a source file to convert to the template format"
-target = col2.file_uploader(uploader_message, key='CSVTarget')
-if target is not None:
+st.session_state.target = col2.file_uploader(uploader_message, key='CSVTarget')
+if st.session_state.target is not None:
     try:
-        target_df = load_csv(target)
+        st.session_state.target_df = load_csv(st.session_state.target)
     except Exception as e:
         with sidebar.chat_message("assistant"):
             response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
             response += '\nPlease double check your file and retry the upload'
             sidebar.write(response)
-        target_df = None
+        st.session_state.target_df = None
         message = {"role": "assistant", "content": response}
         st.session_state.messages.append(message)
 
 
-if template_df is not None and target_df is not None:
+
+if (
+        st.session_state.template_df is not None
+        and st.session_state.target_df is not None
+        and not st.session_state.tables_processed
+):
     with sidebar.chat_message("assistant"):
         with st.spinner("Thank you. Please wait while I process your tables..."):
-            col1.dataframe(template_df)
-            col2.dataframe(target_df)
+            col1.dataframe(st.session_state.template_df)
+            col2.dataframe(st.session_state.target_df)
 
-            template_columns = list(template_df.columns)
-            target_columns = list(target_df.columns)
-
-            # Set up Chat Model and store in session
-            OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
-            TEMPERATURE = 0
-            MODEL = "gpt-3.5-turbo-0613"
-            chat_model = ChatOpenAI(
-                openai_api_key=OPEN_AI_KEY,
-                temperature=TEMPERATURE,
-                model=MODEL
-            )
-            st.session_state['chat_model'] = chat_model
-
-            # Set up parser and store in session
-            class SuggestedMapping(BaseModel):
-                map: Dict[str, List[str]]
-            parser = PydanticOutputParser(pydantic_object=SuggestedMapping)
-            st.session_state['parser'] = parser
-
-            # Set up memory and store in session
-            st.session_state['memory'] = ConversationBufferMemory(memory_key="history", return_messages=True)
+            template_columns = list(st.session_state.template_df.columns)
+            target_columns = list(st.session_state.target_df.columns)
 
             tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
             tmp += " columns in the target table. The template table columns are: {template_columns}."
@@ -124,10 +135,18 @@ if template_df is not None and target_df is not None:
 
         with sidebar.chat_message("assistant"):
             with sidebar.form("disambiguate_columns"):
-                for col in template_df.columns:
+                for col in st.session_state.template_df.columns:
                     choices = suggested_mapping.map[col]
                     if len(choices) > 1:
                         sidebar.radio(col, choices)
+                columns_disamb = st.form_submit_button("Submit")
+                st.session_state.columns_disamb = columns_disamb
+    st.session_state.tables_processed = 1
+
+
+if st.session_state.columns_disamb:
+    with sidebar.chat_message('assistant'):
+        "Got it. Thank you for choosing the columns."
 
 
 

@@ -179,6 +179,8 @@ elif st.session_state.columns_disamb and st.session_state.suggested_mapping:
         resp = resp.rstrip('\n')
         with sidebar.chat_message("assistant"):
             sidebar.write(resp)
+        message = {"role": "assistant", "content": response}
+        st.session_state.messages.append(message)
 
 
 

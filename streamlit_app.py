@@ -139,7 +139,7 @@ if st.session_state.template is None or st.session_state.target is None:
         uploader_message = "Source CSV (to be converted to the template format)"
         st.session_state.target = st.file_uploader(uploader_message, key='CSVTarget')
         proc_tab_submit =\
-            st.form_submit_button("Process Tables", key='process_tables', on_click=process_tables)
+            st.form_submit_button("Process Tables", on_click=process_tables)
 
 
 if (

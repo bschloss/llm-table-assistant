@@ -22,6 +22,39 @@ class SuggestedMapping(BaseModel):
     map: Dict[str, List[str]]
 
 
+def process_tables():
+    if st.session_state.template_df is None or st.session_state.target_df is None:
+        with st.spinner("Processing Tables..."):
+            if st.session_state.template_df is None:
+                try:
+                    st.session_state.template_df = load_csv(st.session_state.template)
+                except Exception as e:
+                    with sidebar.chat_message("assistant"):
+                        response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
+                        response += '\nPlease double check your file and retry the upload'
+                        sidebar.write(response)
+                    st.session_state.template_df = None
+                    message = {"role": "assistant", "content": response}
+                    st.session_state.messages.append(message)
+            if st.session_state.target_df is None:
+                try:
+                    st.session_state.target_df = load_csv(st.session_state.target)
+                except Exception as e:
+                    with sidebar.chat_message("assistant"):
+                        response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
+                        response += '\nPlease double check your file and retry the upload'
+                        sidebar.write(response)
+                    st.session_state.target_df = None
+                    message = {"role": "assistant", "content": response}
+                    st.session_state.messages.append(message)
+    with st.spinner():
+        col1, col2 = st.columns(2)
+        col1.dataframe(st.session_state.template_df)
+        st.session_state.template_displayed = 1
+        col2.dataframe(st.session_state.target_df)
+        st.session_state.target_displayed = 1
+
+
 # Set up LLM and store in session
 if 'chat_model' not in st.session_state.keys():
     OPEN_AI_KEY = os.environ['OPEN_AI_KEY']
@@ -105,40 +138,7 @@ if st.session_state.template is None or st.session_state.target is None:
         st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')
         uploader_message = "Source CSV (to be converted to the template format)"
         st.session_state.target = st.file_uploader(uploader_message, key='CSVTarget')
-        st.session_state.process_tables = st.form_submit_button("Process Tables")
-
-
-if st.session_state.process_tables:
-    if st.session_state.template_df is None or st.session_state.target_df is None:
-        with st.spinner("Processing Tables..."):
-            if st.session_state.template_df is None:
-                try:
-                    st.session_state.template_df = load_csv(st.session_state.template)
-                except Exception as e:
-                    with sidebar.chat_message("assistant"):
-                        response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
-                        response += '\nPlease double check your file and retry the upload'
-                        sidebar.write(response)
-                    st.session_state.template_df = None
-                    message = {"role": "assistant", "content": response}
-                    st.session_state.messages.append(message)
-            if st.session_state.target_df is None:
-                try:
-                    st.session_state.target_df = load_csv(st.session_state.target)
-                except Exception as e:
-                    with sidebar.chat_message("assistant"):
-                        response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
-                        response += '\nPlease double check your file and retry the upload'
-                        sidebar.write(response)
-                    st.session_state.target_df = None
-                    message = {"role": "assistant", "content": response}
-                    st.session_state.messages.append(message)
-    with st.spinner():
-        col1, col2 = st.columns(2)
-        col1.dataframe(st.session_state.template_df)
-        st.session_state.template_displayed = 1
-        col2.dataframe(st.session_state.target_df)
-        st.session_state.target_displayed = 1
+        st.form_submit_button("Process Tables", key='process_tables', on_click=process_tables)
 
 
 if (

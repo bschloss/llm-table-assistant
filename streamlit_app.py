@@ -114,7 +114,6 @@ if st.session_state.process_tables:
             if st.session_state.template_df is None:
                 try:
                     st.session_state.template_df = load_csv(st.session_state.template)
-                    st.session_state.template_displayed = 1
                 except Exception as e:
                     with sidebar.chat_message("assistant"):
                         response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
@@ -126,7 +125,6 @@ if st.session_state.process_tables:
             if st.session_state.target_df is None:
                 try:
                     st.session_state.target_df = load_csv(st.session_state.target)
-                    st.session_state.target_displayed = 1
                 except Exception as e:
                     with sidebar.chat_message("assistant"):
                         response = f'Unfortunately, there was an error processing your source file\n{str(e)}'
@@ -135,10 +133,12 @@ if st.session_state.process_tables:
                     st.session_state.target_df = None
                     message = {"role": "assistant", "content": response}
                     st.session_state.messages.append(message)
+    with st.spinner():
         col1, col2 = st.columns(2)
         col1.dataframe(st.session_state.template_df)
+        st.session_state.template_displayed = 1
         col2.dataframe(st.session_state.target_df)
-
+        st.session_state.target_displayed = 1
 
 
 if (

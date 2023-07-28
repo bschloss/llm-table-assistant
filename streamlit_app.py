@@ -149,9 +149,16 @@ if (
 ):
         with sidebar.chat_message("assistant"):
             with st.spinner("Thank you. Please wait while I process your tables..."):
-
-                template_columns = list(st.session_state.template_df.columns)
-                target_columns = list(st.session_state.target_df.columns)
+                executed = False
+                retry = 0
+                while not executed and retry < 10:
+                    try:
+                        template_columns = list(st.session_state.template_df.columns)
+                        target_columns = list(st.session_state.target_df.columns)
+                        executed = True
+                    except AttributeError:
+                        retry += 1
+                        executed = False
 
                 tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
                 tmp += " columns in the target table. The template table columns are: {template_columns}."

@@ -157,6 +157,7 @@ if (
                         target_columns = list(st.session_state.target_df.columns)
                         executed = True
                     except AttributeError:
+                        st.write(retry)
                         retry += 1
                         executed = False
 

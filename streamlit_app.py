@@ -23,8 +23,8 @@ class SuggestedMapping(BaseModel):
 
 
 def process_tables():
-    if st.session_state.template_df is None or st.session_state.target_df is None:
-        with st.spinner("Processing Tables..."):
+    with st.spinner("Processing Tables..."):
+        if st.session_state.template_df is None or st.session_state.target_df is None:
             if st.session_state.template_df is None:
                 try:
                     st.session_state.template_df = load_csv(st.session_state.template)
@@ -47,7 +47,6 @@ def process_tables():
                     st.session_state.target_df = None
                     message = {"role": "assistant", "content": response}
                     st.session_state.messages.append(message)
-    with st.spinner():
         col1, col2 = st.columns(2)
         col1.dataframe(st.session_state.template_df)
         st.session_state.template_displayed = 1

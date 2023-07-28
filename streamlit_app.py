@@ -151,7 +151,7 @@ if (
             with st.spinner("Thank you. Please wait while I process your tables..."):
                 executed = False
                 retry = 0
-                while not executed and retry < 10:
+                while not executed and retry < 100:
                     try:
                         template_columns = list(st.session_state.template_df.columns)
                         target_columns = list(st.session_state.target_df.columns)

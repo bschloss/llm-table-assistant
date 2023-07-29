@@ -1,5 +1,5 @@
 import os
-import time
+import json
 import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
@@ -81,7 +81,9 @@ def write_col(col, items):
         value = item['value']
         display = item.get('display', None)
         if display == 'dataframe':
-            value = pd.DataFrame.from_records(value)
+            value = pd.DataFrame.from_records(
+                json.loads(value)
+            )
             col.dataframe(value)
         else:
             col.write(value)
@@ -91,7 +93,9 @@ def write_body():
         value = item['value']
         display = item.get('display', None)
         if display == 'dataframe':
-            value = pd.DataFrame.from_records(value)
+            value = pd.DataFrame.from_records(
+                json.loads(value)
+            )
             st.dataframe(value)
         else:
             st.write(value)

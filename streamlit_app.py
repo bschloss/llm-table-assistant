@@ -47,10 +47,13 @@ def process_tables():
                     st.session_state.target_df = None
                     message = {"role": "assistant", "content": response}
                     st.session_state.messages.append(message)
-        col1, col2 = st.columns(2)
-        col1.dataframe(st.session_state.template_df)
+        st.session_state.column1.append(
+            st.session_state.append.template_df
+        )
+        st.session_state.column2.append(
+            st.session_state.append.target_df
+        )
         st.session_state.template_displayed = 1
-        col2.dataframe(st.session_state.target_df)
         st.session_state.target_displayed = 1
 
 
@@ -148,8 +151,16 @@ if 'final_mapping' not in st.session_state.keys():
 
 # Display Logic
 
-# Display Chat Messages
-write_messages()
+# Display File Upload Expander
+# Get Template and Source CSV Files
+with st.expander('Upload Files'):
+    with st.form('data_upload'):
+        uploader_message = "Template CSV"
+        st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')
+        uploader_message = "Source CSV (to be converted to the template format)"
+        st.session_state.target = st.file_uploader(uploader_message, key='CSVTarget')
+        proc_tab_submit =\
+            st.form_submit_button("Process Tables", on_click=process_tables)
 
 # Display Columns
 if st.session_state.column1 and st.session_state.column2:
@@ -165,16 +176,11 @@ elif st.session_state.column1 or st.session_state.column2:
 if st.session_state.body:
     write_body()
 
+# Display Chat Messages
+write_messages()
 
-# Get Template and Source CSV Files
-with st.expander('Upload Files'):
-    with st.form('data_upload'):
-        uploader_message = "Template CSV"
-        st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')
-        uploader_message = "Source CSV (to be converted to the template format)"
-        st.session_state.target = st.file_uploader(uploader_message, key='CSVTarget')
-        proc_tab_submit =\
-            st.form_submit_button("Process Tables", on_click=process_tables)
+
+
 
 
 if (

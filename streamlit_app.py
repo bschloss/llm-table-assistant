@@ -22,20 +22,23 @@ class SuggestedMapping(BaseModel):
     map: Dict[str, List[str]]
 
 
-def process_tables():
+def process_tables(retry=0):
     with st.spinner("Processing Tables..."):
         if st.session_state.template_df is None or st.session_state.target_df is None:
             if st.session_state.template_df is None:
                 try:
                     st.session_state.template_df = load_csv(st.session_state.template)
                 except Exception as e:
-                    with sidebar.chat_message("assistant"):
-                        response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
-                        response += '\nPlease double check your file and retry the upload'
-                        sidebar.write(response)
-                    st.session_state.template_df = None
-                    message = {"role": "assistant", "content": response}
-                    st.session_state.messages.append(message)
+                    if retry < 100:
+                        process_tables(retry=retry + 1)
+                    else:
+                        with sidebar.chat_message("assistant"):
+                            response = f'Unfortunately, there was an error processing your template file\n{str(e)}'
+                            response += '\nPlease double check your file and retry the upload'
+                            sidebar.write(response)
+                        st.session_state.template_df = None
+                        message = {"role": "assistant", "content": response}
+                        st.session_state.messages.append(message)
             if st.session_state.target_df is None:
                 try:
                     st.session_state.target_df = load_csv(st.session_state.target)

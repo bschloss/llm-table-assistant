@@ -189,7 +189,7 @@ with st.expander('Upload Files'):
             key='CSVTarget'
         )
         if target:
-            store_table(target st.session_state.column2)
+            store_table(target, st.session_state.column2)
             st.session_state.target_displayed = 1
         proc_tab_submit =\
             st.form_submit_button("Process Tables", on_click=process_tables)

@@ -47,14 +47,15 @@ def process_tables():
                     st.session_state.target_df = None
                     message = {"role": "assistant", "content": response}
                     st.session_state.messages.append(message)
-        st.session_state.column1.append(
-            st.session_state.template_df
-        )
-        st.session_state.column2.append(
-            st.session_state.target_df
-        )
-        st.session_state.template_displayed = 1
-        st.session_state.target_displayed = 1
+        if st.session_state.template_df and st.session_state.target_df:
+            st.session_state.column1.append(
+                st.session_state.template_df
+            )
+            st.session_state.column2.append(
+                st.session_state.target_df
+            )
+            st.session_state.template_displayed = 1
+            st.session_state.target_displayed = 1
 
 
 # Set up LLM and store in session

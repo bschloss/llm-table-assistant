@@ -22,38 +22,34 @@ class SuggestedMapping(BaseModel):
     map: Dict[str, List[str]]
 
 
-def process_tables(retry=0):
+def process_tables():
     with st.spinner("Processing Tables..."):
         if st.session_state.template_df is None:
             try:
+                time.sleep(2)
                 st.session_state.template_df = load_csv(st.session_state.template)
+                time.sleep(2)
             except Exception as e:
-                if retry < 100:
-                    time.sleep(2)
-                    process_tables(retry=retry + 1)
-                else:
-                    with sidebar.chat_message("assistant"):
-                        response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
-                        response += '\nPlease double check your file and retry the upload'
-                        sidebar.write(response)
-                    st.session_state.template_df = None
-                    message = {"role": "assistant", "content": response}
-                    st.session_state.messages.append(message)
+                with sidebar.chat_message("assistant"):
+                    response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
+                    response += '\nPlease double check your file and retry the upload'
+                    sidebar.write(response)
+                st.session_state.template_df = None
+                message = {"role": "assistant", "content": response}
+                st.session_state.messages.append(message)
         if st.session_state.target_df is None:
             try:
                 time.sleep(2)
                 st.session_state.target_df = load_csv(st.session_state.target)
+                time.sleep(2)
             except Exception as e:
-                if retry < 100:
-                    process_tables(retry=retry + 1)
-                else:
-                    with sidebar.chat_message("assistant"):
-                        response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
-                        response += '\nPlease double check your file and retry the upload'
-                        sidebar.write(response)
-                    st.session_state.template_df = None
-                    message = {"role": "assistant", "content": response}
-                    st.session_state.messages.append(message)
+                with sidebar.chat_message("assistant"):
+                    response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
+                    response += '\nPlease double check your file and retry the upload'
+                    sidebar.write(response)
+                st.session_state.template_df = None
+                message = {"role": "assistant", "content": response}
+                st.session_state.messages.append(message)
         if st.session_state.template_df and st.session_state.target_df:
             st.session_state.column1.append(
                 st.session_state.template_df

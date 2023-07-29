@@ -32,41 +32,42 @@ def store_table(file_io, container):
     )
 
 def process_tables():
-    with st.spinner("Processing Tables..."):
-        try:
-            df = load_csv(st.session_state.template)
-            st.session_state.column1.append(
-                {
-                    'display': 'dataframe',
-                    'value': df.to_json(orient='records')
-                }
-            )
-            st.session_state.template_displayed = 1
-        except Exception as e:
-            with sidebar.chat_message("assistant"):
-                response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
-                response += '\nPlease double check your file and retry the upload'
-                sidebar.write(response)
-            st.session_state.template_df = None
-            message = {"role": "assistant", "content": response}
-            st.session_state.messages.append(message)
-        try:
-            df = load_csv(st.session_state.target)
-            st.session_state.column2.append(
-                {
-                    'display': 'dataframe',
-                    'value': df.to_json(orient='records')
-                }
-            )
-            st.session_state.target_displayed = 1
-        except Exception as e:
-            with sidebar.chat_message("assistant"):
-                response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
-                response += '\nPlease double check your file and retry the upload'
-                sidebar.write(response)
-            st.session_state.template_df = None
-            message = {"role": "assistant", "content": response}
-            st.session_state.messages.append(message)
+    return
+    # with st.spinner("Processing Tables..."):
+    #     try:
+    #         df = load_csv(st.session_state.template)
+    #         st.session_state.column1.append(
+    #             {
+    #                 'display': 'dataframe',
+    #                 'value': df.to_json(orient='records')
+    #             }
+    #         )
+    #         st.session_state.template_displayed = 1
+    #     except Exception as e:
+    #         with sidebar.chat_message("assistant"):
+    #             response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
+    #             response += '\nPlease double check your file and retry the upload'
+    #             sidebar.write(response)
+    #         st.session_state.template_df = None
+    #         message = {"role": "assistant", "content": response}
+    #         st.session_state.messages.append(message)
+    #     try:
+    #         df = load_csv(st.session_state.target)
+    #         st.session_state.column2.append(
+    #             {
+    #                 'display': 'dataframe',
+    #                 'value': df.to_json(orient='records')
+    #             }
+    #         )
+    #         st.session_state.target_displayed = 1
+    #     except Exception as e:
+    #         with sidebar.chat_message("assistant"):
+    #             response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
+    #             response += '\nPlease double check your file and retry the upload'
+    #             sidebar.write(response)
+    #         st.session_state.template_df = None
+    #         message = {"role": "assistant", "content": response}
+    #         st.session_state.messages.append(message)
 
 
 def write_messages():

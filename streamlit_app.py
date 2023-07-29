@@ -84,6 +84,29 @@ if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": content}]
 
 
+if 'column1' not in st.session_state.keys():
+    st.session_state.column1 = []
+
+if 'column2' not in st.session_state.keys():
+    st.session_state.column2 = []
+
+if 'body' not in st.session_state.keys():
+    st.session_state.body = []
+
+def write_messages():
+    for message in st.session_state.messages:
+        with sidebar.chat_message(message["role"]):
+            sidebar.write(message["content"])
+
+
+def write_col(col, items):
+    for item in items:
+        col.write(item)
+
+def write_body():
+    for item in st.session_state.body:
+        st.write(item)
+
 # Set up memory and store in session
 if 'memory' not in st.session_state.keys():
     memory = ConversationBufferMemory(memory_key="history", return_messages=True)
@@ -123,15 +146,28 @@ if 'suggested_mapping' not in st.session_state.keys():
 if 'final_mapping' not in st.session_state.keys():
     st.session_state.final_mapping = {}
 
+# Display Logic
 
-# Display chat messages
-for message in st.session_state.messages:
-    with sidebar.chat_message(message["role"]):
-        sidebar.write(message["content"])
+# Display Chat Messages
+write_messages()
+
+# Display Columns
+if st.session_state.column1 and st.session_state.column2:
+    col1, col2 = st.columns(2)
+    write_col(col1, st.session_state.column1)
+    write_col(col2, st.session_state.column2)
+elif st.session_state.column1 or st.session_state.column2:
+    col1 = st.columns(1)
+    items = st.session_state.column1 + st.session_state.column2
+    write_col(col1, items)
+
+# Display Body
+if st.session_state.body:
+    write_body()
 
 
 # Get Template and Source CSV Files
-if st.session_state.template is None or st.session_state.target is None:
+with st.expander('Upload Files'):
     with st.form('data_upload'):
         uploader_message = "Template CSV"
         st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')

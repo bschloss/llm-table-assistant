@@ -48,10 +48,10 @@ def process_tables():
                     message = {"role": "assistant", "content": response}
                     st.session_state.messages.append(message)
         st.session_state.column1.append(
-            st.session_state.append.template_df
+            st.session_state.template_df
         )
         st.session_state.column2.append(
-            st.session_state.append.target_df
+            st.session_state.target_df
         )
         st.session_state.template_displayed = 1
         st.session_state.target_displayed = 1

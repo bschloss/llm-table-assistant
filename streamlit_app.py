@@ -24,12 +24,12 @@ class SuggestedMapping(BaseModel):
 
 def store_table(file_io, container):
     df = load_csv(file_io)
-    container.append(
+    container = [
         {
             'display': 'dataframe',
             'value': df.to_json(orient='records')
         }
-    )
+    ]
 
 def process_tables():
     return

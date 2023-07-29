@@ -11,6 +11,7 @@ from langchain.prompts import (
     AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
+import pandas as pd
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
@@ -26,9 +27,14 @@ def process_tables():
     with st.spinner("Processing Tables..."):
         if st.session_state.template_df is None:
             try:
-                time.sleep(2)
-                st.session_state.template_df = load_csv(st.session_state.template)
-                time.sleep(2)
+                df = load_csv(st.session_state.template)
+                st.session_state.column1.append(
+                    {
+                        'display': 'dataframe',
+                        'value': df.to_json(orient='records')
+                    }
+                )
+                st.session_state.template_displayed = 1
             except Exception as e:
                 with sidebar.chat_message("assistant"):
                     response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
@@ -39,9 +45,14 @@ def process_tables():
                 st.session_state.messages.append(message)
         if st.session_state.target_df is None:
             try:
-                time.sleep(2)
-                st.session_state.target_df = load_csv(st.session_state.target)
-                time.sleep(2)
+                df = load_csv(st.session_state.target)
+                st.session_state.column2.append(
+                    {
+                        'display': 'dataframe',
+                        'value': df.to_json(orient='records')
+                    }
+                )
+                st.session_state.target_displayed = 1
             except Exception as e:
                 with sidebar.chat_message("assistant"):
                     response = f'Unfortunately, there was an error processing your template file.\n{str(e)}'
@@ -50,15 +61,6 @@ def process_tables():
                 st.session_state.template_df = None
                 message = {"role": "assistant", "content": response}
                 st.session_state.messages.append(message)
-        if st.session_state.template_df and st.session_state.target_df:
-            st.session_state.column1.append(
-                st.session_state.template_df
-            )
-            st.session_state.column2.append(
-                st.session_state.target_df
-            )
-            st.session_state.template_displayed = 1
-            st.session_state.target_displayed = 1
 
 
 # Set up LLM and store in session
@@ -108,11 +110,24 @@ def write_messages():
 
 def write_col(col, items):
     for item in items:
-        col.write(item)
+        value = item['value']
+        display = item.get('display', None)
+        if display == 'dataframe':
+            value = pd.DataFrame.from_records(value)
+            col.dataframe(value)
+        else:
+            col.write(value)
 
 def write_body():
     for item in st.session_state.body:
-        st.write(item)
+        value = item['value']
+        display = item.get('display', None)
+        if display == 'dataframe':
+            value = pd.DataFrame.from_records(value)
+            st.dataframe(value)
+        else:
+            st.write(value)
+
 
 # Set up memory and store in session
 if 'memory' not in st.session_state.keys():
@@ -126,14 +141,8 @@ if 'columns_disamb' not in st.session_state.keys():
 if 'col2val' not in st.session_state.keys():
     st.session_state.col2val = {}
 
-if 'template_df' not in st.session_state.keys():
-    st.session_state.template_df = None
-
 if 'target' not in st.session_state.keys():
     st.session_state.target = None
-
-if 'target_df' not in st.session_state.keys():
-    st.session_state.target_df = None
 
 if 'template' not in st.session_state.keys():
     st.session_state.template = None
@@ -155,8 +164,7 @@ if 'final_mapping' not in st.session_state.keys():
 
 # Display Logic
 
-# Display File Upload Expander
-# Get Template and Source CSV Files
+# Display File Upload Expander to Get Template and Source CSV Files
 with st.expander('Upload Files'):
     with st.form('data_upload'):
         uploader_message = "Template CSV"
@@ -187,80 +195,80 @@ write_messages()
 
 
 
-if (
-        st.session_state.template_displayed
-        and st.session_state.target_displayed
-        and not st.session_state.suggested_mapping
-):
-        with sidebar.chat_message("assistant"):
-            with st.spinner("Thank you. Please wait while I process your tables..."):
-                executed = False
-                # retry = 0
-                while not executed: # and retry < 100:
-                    try:
-                        template_columns = list(st.session_state.template_df.columns)
-                        target_columns = list(st.session_state.target_df.columns)
-                        executed = True
-                    except AttributeError:
-                        # st.write(retry)
-                        # retry += 1
-                        executed = False
-
-                tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
-                tmp += " columns in the target table. The template table columns are: {template_columns}."
-                tmp += "\n{format_instructions}\n"
-                tmp += "Here are the target table columns: {target_columns}."
-                prompt = PromptTemplate.from_template(tmp)
-                input = prompt.format_prompt(
-                    template_columns=', '.join(template_columns),
-                    format_instructions=parser.get_format_instructions(),
-                    target_columns=', '.join(target_columns)
-                )
-                qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
-                response = qa.run(input=input.to_string())
-                st.session_state.suggested_mapping = parser.parse(response)
-                temp_cols = ', '.join(template_columns)
-                targ_cols = ', '.join(target_columns)
-            response =  f'Based on the column names in the two tables, I would suggest the following possible mappings.'
-            response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
-            sidebar.write(response)
-            message = {"role": "assistant", "content": response}
-            st.session_state.messages.append(message)
-
-
-if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
-        with sidebar.chat_message("assistant"):
-            with sidebar.form("disambiguate_columns"):
-                for col in st.session_state.template_df.columns:
-                    choices = st.session_state.suggested_mapping.map[col]
-                    if len(choices) > 1:
-                        st.session_state.col2val[col] = sidebar.radio(col, choices)
-                    else:
-                        st.session_state.col2val[col] = choices[0]
-                columns_disamb = st.form_submit_button("Submit")
-                st.session_state.columns_disamb = columns_disamb
-elif st.session_state.final_mapping:
-    with sidebar.chat_message('assistant'):
-        response = "Got it. Thank you for choosing the columns. I have the following mapping:\n\n"
-        for col, val in st.session_state.col2val.items():
-            response += val + ': ' + col + '\n\n'
-            st.session_state.final_mapping[val] = col
-        response = response.rstrip('\n')
-        with sidebar.chat_message("assistant"):
-            sidebar.write(response)
-        message = {"role": "assistant", "content": response}
-        st.session_state.messages.append(message)
-
-
-
-# Function for generating LLM response
-def generate_response(prompt_input, email, passwd):
-    # Hugging Face Login
-    sign = Login(email, passwd)
-    cookies = sign.login()
-    # Create ChatBot                        
-    chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
-    return chatbot.chat(prompt_input)
+# if (
+#         st.session_state.template_displayed
+#         and st.session_state.target_displayed
+#         and not st.session_state.suggested_mapping
+# ):
+#         with sidebar.chat_message("assistant"):
+#             with st.spinner("Thank you. Please wait while I process your tables..."):
+#                 executed = False
+#                 # retry = 0
+#                 while not executed: # and retry < 100:
+#                     try:
+#                         template_columns = list(st.session_state.template_df.columns)
+#                         target_columns = list(st.session_state.target_df.columns)
+#                         executed = True
+#                     except AttributeError:
+#                         # st.write(retry)
+#                         # retry += 1
+#                         executed = False
+#
+#                 tmp = "You are a helpful assistant. Your job is to map columns in the template table to one or more "
+#                 tmp += " columns in the target table. The template table columns are: {template_columns}."
+#                 tmp += "\n{format_instructions}\n"
+#                 tmp += "Here are the target table columns: {target_columns}."
+#                 prompt = PromptTemplate.from_template(tmp)
+#                 input = prompt.format_prompt(
+#                     template_columns=', '.join(template_columns),
+#                     format_instructions=parser.get_format_instructions(),
+#                     target_columns=', '.join(target_columns)
+#                 )
+#                 qa = ConversationChain(llm=st.session_state['chat_model'], memory=st.session_state['memory'])
+#                 response = qa.run(input=input.to_string())
+#                 st.session_state.suggested_mapping = parser.parse(response)
+#                 temp_cols = ', '.join(template_columns)
+#                 targ_cols = ', '.join(target_columns)
+#             response =  f'Based on the column names in the two tables, I would suggest the following possible mappings.'
+#             response += '\n\nIf there is more than one possible mapping, please choose one in the form below.'
+#             sidebar.write(response)
+#             message = {"role": "assistant", "content": response}
+#             st.session_state.messages.append(message)
+#
+#
+# if not st.session_state.columns_disamb and st.session_state.suggested_mapping:
+#         with sidebar.chat_message("assistant"):
+#             with sidebar.form("disambiguate_columns"):
+#                 for col in st.session_state.template_df.columns:
+#                     choices = st.session_state.suggested_mapping.map[col]
+#                     if len(choices) > 1:
+#                         st.session_state.col2val[col] = sidebar.radio(col, choices)
+#                     else:
+#                         st.session_state.col2val[col] = choices[0]
+#                 columns_disamb = st.form_submit_button("Submit")
+#                 st.session_state.columns_disamb = columns_disamb
+# elif st.session_state.final_mapping:
+#     with sidebar.chat_message('assistant'):
+#         response = "Got it. Thank you for choosing the columns. I have the following mapping:\n\n"
+#         for col, val in st.session_state.col2val.items():
+#             response += val + ': ' + col + '\n\n'
+#             st.session_state.final_mapping[val] = col
+#         response = response.rstrip('\n')
+#         with sidebar.chat_message("assistant"):
+#             sidebar.write(response)
+#         message = {"role": "assistant", "content": response}
+#         st.session_state.messages.append(message)
+#
+#
+#
+# # Function for generating LLM response
+# def generate_response(prompt_input, email, passwd):
+#     # Hugging Face Login
+#     sign = Login(email, passwd)
+#     cookies = sign.login()
+#     # Create ChatBot
+#     chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
+#     return chatbot.chat(prompt_input)
 
 # # User-provided prompt
 # if prompt := st.chat_input(disabled=not (hf_email and hf_pass)):

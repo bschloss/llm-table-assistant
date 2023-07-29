@@ -22,6 +22,14 @@ from typing import Dict, List
 class SuggestedMapping(BaseModel):
     map: Dict[str, List[str]]
 
+def store_table(file_io, container):
+    df = load_csv(file_io)
+    container.append(
+        {
+            'display': 'dataframe',
+            'value': df.to_json(orient='records')
+        }
+    )
 
 def process_tables():
     with st.spinner("Processing Tables..."):
@@ -60,6 +68,32 @@ def process_tables():
             message = {"role": "assistant", "content": response}
             st.session_state.messages.append(message)
 
+
+def write_messages():
+    for message in st.session_state.messages:
+        with sidebar.chat_message(message["role"]):
+            sidebar.write(message["content"])
+
+
+def write_col(col, items):
+    for item in items:
+        value = item['value']
+        display = item.get('display', None)
+        if display == 'dataframe':
+            value = pd.DataFrame.from_records(value)
+            col.dataframe(value)
+        else:
+            col.write(value)
+
+def write_body():
+    for item in st.session_state.body:
+        value = item['value']
+        display = item.get('display', None)
+        if display == 'dataframe':
+            value = pd.DataFrame.from_records(value)
+            st.dataframe(value)
+        else:
+            st.write(value)
 
 # Set up LLM and store in session
 if 'chat_model' not in st.session_state.keys():
@@ -100,31 +134,7 @@ if 'column2' not in st.session_state.keys():
 if 'body' not in st.session_state.keys():
     st.session_state.body = []
 
-def write_messages():
-    for message in st.session_state.messages:
-        with sidebar.chat_message(message["role"]):
-            sidebar.write(message["content"])
 
-
-def write_col(col, items):
-    for item in items:
-        value = item['value']
-        display = item.get('display', None)
-        if display == 'dataframe':
-            value = pd.DataFrame.from_records(value)
-            col.dataframe(value)
-        else:
-            col.write(value)
-
-def write_body():
-    for item in st.session_state.body:
-        value = item['value']
-        display = item.get('display', None)
-        if display == 'dataframe':
-            value = pd.DataFrame.from_records(value)
-            st.dataframe(value)
-        else:
-            st.write(value)
 
 
 # Set up memory and store in session
@@ -166,9 +176,21 @@ if 'final_mapping' not in st.session_state.keys():
 with st.expander('Upload Files'):
     with st.form('data_upload'):
         uploader_message = "Template CSV"
-        st.session_state.template = st.file_uploader(uploader_message, key='CSVTemplate')
+        template = st.file_uploader(
+            uploader_message,
+            key='CSVTemplate'
+        )
+        if template:
+            store_table(template, st.session_state.column1)
+            st.session_state.template_displayed = 1
         uploader_message = "Source CSV (to be converted to the template format)"
-        st.session_state.target = st.file_uploader(uploader_message, key='CSVTarget')
+        target = st.file_uploader(
+            uploader_message,
+            key='CSVTarget'
+        )
+        if target:
+            store_table(target st.session_state.column2)
+            st.session_state.target_displayed = 1
         proc_tab_submit =\
             st.form_submit_button("Process Tables", on_click=process_tables)
 
